@@ -99,6 +99,7 @@ options { backtrack = true; }
     | s1=returnStatement { s = s1; }
     | s1=assignStatement { s = s1; }
     | e=expr ';' { s = new ExpressionStatement(e); }
+    | ';' { s = new EmptyStatement(); }
     ;
         
 whileStatement returns [Statement s]

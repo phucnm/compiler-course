@@ -206,6 +206,13 @@ public class PrintVisitor implements Visitor {
     }
 
     @Override
+    public Object visit(EmptyStatement s) {
+        printIndentation(PrintVisitor.indent);
+        System.out.print(";");
+        return null;
+    }
+
+    @Override
     public Object visit(PlusExpression p) {
         p.e1.accept(this);
         System.out.print ("+");

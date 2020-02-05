@@ -16,6 +16,7 @@ public interface Visitor {
     Object visit(ArrayAssignment a);
     Object visit(ExpressionStatement e);
     Object visit(ReturnStatement r);
+    Object visit(EmptyStatement s);
 
     Object visit(PlusExpression p);
     Object visit(SubtractExpression p);
