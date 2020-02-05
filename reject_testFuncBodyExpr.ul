@@ -1,0 +1,5 @@
+// Reject test suite
+
+int foo() {
+    a + 2
+}

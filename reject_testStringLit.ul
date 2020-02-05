@@ -1,0 +1,6 @@
+// Reject test suite
+
+int foo() {
+   string a;
+   a = "this is a string; 
+}

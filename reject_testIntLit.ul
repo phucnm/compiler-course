@@ -1,0 +1,6 @@
+// Reject test suite
+
+int foo() {
+   int a;
+   a = 34a; 
+}

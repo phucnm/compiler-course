@@ -1,0 +1,6 @@
+// Reject test suite
+
+int foo() {
+   char c;
+   c = ''; 
+}
