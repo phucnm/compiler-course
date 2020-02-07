@@ -28,7 +28,7 @@ public class Compiler {
 
 		try {
 			Program p = parser.program();
-			PrintVisitor v = new PrintVisitor();
+			TypeCheckVisitor v = new TypeCheckVisitor();
 			p.accept(v);
 
 		}
