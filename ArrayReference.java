@@ -1,10 +1,10 @@
 public class ArrayReference extends Expression {
-    Identifier id;
+    IdentifierValue id;
     Expression e;
 
     public ArrayReference(Identifier id, Expression e)
     {
-        this.id = id;
+        this.id = new IdentifierValue(id);
         this.e = e;
     }
 

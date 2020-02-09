@@ -323,7 +323,7 @@ public class PrintVisitor implements Visitor {
             Expression e = l.getExpression(i);
             e.accept(this);
             System.out.print(",");
-    }
+        }
         l.getExpression(listSize - 1).accept(this);
         return null;
     }

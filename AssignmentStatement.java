@@ -1,10 +1,10 @@
 public class AssignmentStatement extends Statement {
 
-    Identifier id;
+    IdentifierValue id;
     Expression e;
 
     public AssignmentStatement(Identifier id, Expression e) {
-        this.id = id;
+        this.id = new IdentifierValue(id);
         this.e = e;
     }
 

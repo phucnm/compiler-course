@@ -9,6 +9,10 @@ public class FunctionDeclaration implements ASTNode {
         this.params = params;
     }
 
+    public String toString() {
+        return type.toString() + id.name;
+    }
+
     @Override
     public Object accept(Visitor visitor)
     {

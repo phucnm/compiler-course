@@ -3,6 +3,8 @@ import java.util.Vector;
 public class FunctionBody implements ASTNode {
     Vector<VariableDeclaration> varDecls;
     Vector<Statement> stmts;
+    // Must be assigned when traversing AST
+    Function containingFunction = null;
 
     public FunctionBody()
     {

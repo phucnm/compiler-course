@@ -1,6 +1,7 @@
 public abstract class Type {
     public abstract Object accept(Visitor v);
     public abstract String toString();
+    
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -10,5 +11,13 @@ public abstract class Type {
             return false;
         }
         return true;
+    }
+
+    public boolean isSubType(Type t) {
+        //Subtyping relationship
+        if (this instanceof IntegerType && t instanceof FloatType) {
+            return true;
+        }
+        return this.equals(t);
     }
 }

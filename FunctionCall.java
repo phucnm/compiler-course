@@ -1,10 +1,9 @@
 public class FunctionCall extends Expression {
-    //TODO: add exprlist
-    Identifier id;
+    IdentifierValue id;
     ExpressionList exprList;
 
     public FunctionCall(Identifier id, ExpressionList exprList) {
-        this.id = id;
+        this.id = new IdentifierValue(id);
         this.exprList = exprList;
     }
 

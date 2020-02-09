@@ -7,6 +7,22 @@ public class ArrayType extends Type {
         this.size = size;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ArrayType objType = (ArrayType)o;
+        if (!objType.type.equals(this.type) || !objType.size.equals(this.size)) {
+            return false;
+        }
+
+        return true;
+    }
+
     public Object accept(Visitor visitor) {
         return visitor.visit(this);
     }
