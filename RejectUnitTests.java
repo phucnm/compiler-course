@@ -15,7 +15,9 @@ public class RejectUnitTests {
         ulNoActionsLexer lexer = new ulNoActionsLexer(input);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         ulNoActionsParser parser = new ulNoActionsParser(tokens);
-        parser.function();
+        Program p = parser.program();
+        TypeCheckVisitor v = new TypeCheckVisitor();
+        p.accept(v);
     }
 	public static void main (String[] args) throws Exception {
         int count = 1;

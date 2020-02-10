@@ -60,9 +60,11 @@ public class TypeCheckVisitor implements Visitor {
 
     @Override
     public Type visit(Function f) throws SemanticException {
+        variableEnv.beginScope();
         Type returnType = (Type)f.decl.accept(this);
         f.body.containingFunction = f;
         f.body.accept(this);
+        variableEnv.endScope();
         return returnType;
     }
 
@@ -77,14 +79,13 @@ public class TypeCheckVisitor implements Visitor {
     @Override
     public Type visit(FormalParameterList l) throws SemanticException {
         Map<String, FormalParameter> paramMap = new HashMap<String, FormalParameter>();
-        variableEnv.beginScope();
         int listSize = l.getFormalParameterCount();
 
         for (int i=0; i < listSize; i++)
         {
             FormalParameter p = l.getFormalParameter(i);
             // 2.2.1
-            if (paramMap.get(p.id.name) != null) {
+            if (variableEnv.lookupInScope(p.id.name) != null) {
                 throw new SemanticException("No two parameters of a function may have the same name");
             } else {
                 paramMap.put(p.id.name, p);
@@ -95,7 +96,6 @@ public class TypeCheckVisitor implements Visitor {
             }
             p.accept(this);
         }
-        variableEnv.endScope();
         return null;
     }
 
@@ -108,11 +108,10 @@ public class TypeCheckVisitor implements Visitor {
     @Override
     public Type visit(FunctionBody f) throws SemanticException {
         Map<String, VariableDeclaration> localVarMap = new HashMap<String, VariableDeclaration>();
-        variableEnv.beginScope();
         for (int i=0; i< f.getVariableDeclarationCount() ; i++) {
             VariableDeclaration v = f.getVariableDeclaration(i);
             // 2.2.2
-            if (localVarMap.get(v.id.name) != null) {
+            if (variableEnv.lookupInScope(v.id.name) != null) {
                 throw new SemanticException("No two local variables declared in a function may have the same name");
             } else {
                 localVarMap.put(v.id.name, v);
@@ -123,7 +122,6 @@ public class TypeCheckVisitor implements Visitor {
             }
             v.accept(this);
         }
-        variableEnv.endScope();
         for (int i=0; i< f.getStatementCount() ; i++)
         {
             Statement s = f.getStatement(i);
@@ -147,13 +145,11 @@ public class TypeCheckVisitor implements Visitor {
 
     @Override
     public Type visit(Block b) throws SemanticException {
-        variableEnv.beginScope();
         for (int i=0; i< b.getStatementCount(); i++)
         {
             Statement s = b.getStatement(i);
             s.accept(this);
         }
-        variableEnv.beginScope();
         return null;
     }
 
@@ -207,16 +203,22 @@ public class TypeCheckVisitor implements Visitor {
         Type varType = (Type)a.id.accept(this);
         Type exprType = (Type)a.e.accept(this);
         if (!(exprType.isSubType(varType))) {
-            throw new SemanticException("The type of an expression used in an assignment statment must be a subtype of the containing function");
+            throw new SemanticException("The type of an expression used in an assignment statment must be a subtype of the variable type");
         }
         return null;
     }
 
     @Override
     public Type visit(ArrayAssignment a) throws SemanticException {
-        a.id.accept(this);
-        a.e1.accept(this);
-        a.e2.accept(this);
+        Type arrayType = ((ArrayType)a.id.accept(this)).type;
+        Type indexType = (Type)a.e1.accept(this);
+        Type exprType = (Type)a.e2.accept(this);
+        if (!(indexType instanceof IntegerType)) {
+            throw new SemanticException("An array index expression must have type of int");
+        }
+        if (!(exprType.isSubType(arrayType))) {
+            throw new SemanticException("The type " + exprType + " of an expression used in an array element assignment must be a subtype of the array type " + arrayType);
+        }
         return null;
     }
 
@@ -319,10 +321,10 @@ public class TypeCheckVisitor implements Visitor {
     @Override
     public Type visit(ArrayReference a) throws SemanticException {
         Type indexType = (Type)a.e.accept(this);
-        if (indexType instanceof IntegerType) {
-            return indexType;
+        if (!(indexType instanceof IntegerType)) {
+            throw new SemanticException("An array index expression must have type of int");
         }
-        return null;
+        return ((ArrayType)a.id.accept(this)).type;
     }
 
     @Override
@@ -333,6 +335,18 @@ public class TypeCheckVisitor implements Visitor {
         FunctionDeclaration decl = functionEnv.lookup(f.id.id.name);
         if (decl == null) {
             return null;
+        }
+        int defParamCount = decl.params.getFormalParameterCount();
+        int invocationParamCount = f.exprList.getExpressionCount();
+        if (defParamCount != invocationParamCount) {
+            throw new SemanticException("The number of arguments in the invocation must match the number of parameters n, in the function f");
+        }
+        for (int i = 0; i < defParamCount; i++) {
+            Type defType = decl.params.getFormalParameter(i).type;
+            Type invoType = (Type)f.exprList.getExpression(i).accept(this);
+            if (!(invoType.isSubType(defType))) {
+                throw new SemanticException("Type of arguments must be convetible to type of declared parameters");
+            }
         }
         return decl.type;
     }
@@ -373,7 +387,7 @@ public class TypeCheckVisitor implements Visitor {
 
     @Override
     public Type visit(ParenExpression p) throws SemanticException {
-        return null;
+        return (Type)p.e.accept(this);
     }
 
     @Override
