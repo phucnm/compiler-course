@@ -70,7 +70,7 @@ functionBody returns [FunctionBody body]
 	;
 
 identifier returns [Identifier id]
-    : i=ID { id = new Identifier(i.getText()); }
+    : i=ID { id = new Identifier(i.getText(), $i.line, $i.pos); }
 	;
 
 varDecl returns [VariableDeclaration v]
@@ -83,12 +83,16 @@ compoundType returns [Type t]
     ;
 
 type returns [Type t]
-    : 'int' { t = new IntegerType(); }
-    | 'float' { t = new FloatType(); }
-    | 'char' { t = new CharType(); }
-    | 'string' { t = new StringType(); }
-    | 'boolean' { t = new BooleanType(); }
-    | 'void' { t = new VoidType(); }
+@after {
+    t.line = $tok.line;
+    t.pos = $tok.pos;
+ }
+    : tok='int' { t = new IntegerType(); }
+    | tok='float' { t = new FloatType(); }
+    | tok='char' { t = new CharType(); }
+    | tok='string' { t = new StringType(); }
+    | tok='boolean' { t = new BooleanType(); }
+    | tok='void' { t = new VoidType(); }
 	;
 
 statement returns [Statement s]

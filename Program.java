@@ -3,7 +3,7 @@ import java.util.Vector;
 public class Program implements ASTNode {
     Vector<Function> functions;
 
-    public Program(int line, int pos)
+    public Program()
     {
         functions = new Vector<Function>();
     }

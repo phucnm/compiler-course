@@ -1,6 +1,8 @@
 public abstract class Type {
     public abstract Object accept(Visitor v);
     public abstract String toString();
+    public int pos;
+    public int line;
     
     @Override
     public boolean equals(Object o) {

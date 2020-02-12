@@ -15,7 +15,7 @@ public class TypeCheckVisitor implements Visitor {
         int funcCount = p.getFunctionCount();
         
         if (funcCount < 1) {
-            throw new SemanticException("A program must contain at least one function");
+            throw new SemanticException("Line [0, 0]: A program must contain at least one function");
         }
 
         for (int i = 0; i < funcCount; i++) {
@@ -29,7 +29,11 @@ public class TypeCheckVisitor implements Visitor {
             String funcSig = f.functionNameSignature();
             if (funcMap.get(funcSig) != null) {
                 // 2.1.3
-                throw new SemanticException("There are two functions have the same name: " + f.decl.id.name);
+                throw new SemanticException("Line [%d, %d]: There are two functions have the same name: %s",
+                    f.decl.type.line,
+                    f.decl.type.pos,
+                    f.decl.id.name
+                );
             } else {
                 funcMap.put(funcSig, f);
             }
@@ -41,19 +45,25 @@ public class TypeCheckVisitor implements Visitor {
         }
         // 2.1.2
         if (mainChecked == false) {
-            throw new SemanticException("There must be at least one function main");
+            throw new SemanticException("Line [0, 0]: There must be at least one function main");
         }
         // 2.1.2
         if (mainFunc == null) {
-            throw new SemanticException("There must be at least one function main");
+            throw new SemanticException("Line [0, 0]: There must be at least one function main");
         }
         // 2.1.2 a
         if (mainFunc.decl.params != null && mainFunc.decl.params.getFormalParameterCount() != 0) {
-            throw new SemanticException("Main function must take no parameters");
+            throw new SemanticException("Line [%d, %d]: Main function must take no parameters", 
+                mainFunc.decl.type.line,
+                mainFunc.decl.type.pos
+            );
         }
         // 2.1.2 b
         if (!(mainFunc.decl.type instanceof VoidType)) {
-            throw new SemanticException("Main function must have a return type of `void`");
+            throw new SemanticException("Line [%d, %d]: Main function must have a return type of `void`", 
+                mainFunc.decl.type.line,
+                mainFunc.decl.type.pos
+            );
         }
         return null;
     }
@@ -86,13 +96,21 @@ public class TypeCheckVisitor implements Visitor {
             FormalParameter p = l.getFormalParameter(i);
             // 2.2.1
             if (variableEnv.lookupInScope(p.id.name) != null) {
-                throw new SemanticException("No two parameters of a function may have the same name");
+                throw new SemanticException("Line [%d, %d]: No two parameters of a function may have the same name: %s",
+                    p.type.line,
+                    p.type.pos,
+                    p.id.name
+                );
             } else {
                 paramMap.put(p.id.name, p);
             }
             // 2.2.3
             if (p.type instanceof VoidType) {
-                throw new SemanticException("No parameter may have a type of void");
+                throw new SemanticException("Line [%d, %d]: No parameter may have a type of void: %s",
+                    p.type.line,
+                    p.type.pos,
+                    p.id.name
+                );
             }
             p.accept(this);
         }
@@ -112,13 +130,21 @@ public class TypeCheckVisitor implements Visitor {
             VariableDeclaration v = f.getVariableDeclaration(i);
             // 2.2.2
             if (variableEnv.lookupInScope(v.id.name) != null) {
-                throw new SemanticException("No two local variables declared in a function may have the same name");
+                throw new SemanticException("Line [%d, %d]: No two local variables declared in a function may have the same name: %s", 
+                    v.type.line,
+                    v.type.pos,
+                    v.id.name
+                );
             } else {
                 localVarMap.put(v.id.name, v);
             }
             // 2.2.4
             if (v.type instanceof VoidType) {
-                throw new SemanticException("No local variable may have a type of void");
+                throw new SemanticException("Line [%d, %d]: No local variable may have a type of void: %s",
+                    v.type.line,
+                    v.type.pos,
+                    v.id.name
+                );
             }
             v.accept(this);
         }
@@ -128,7 +154,10 @@ public class TypeCheckVisitor implements Visitor {
             if (s instanceof ReturnStatement) {
                 Type retType = (Type)s.accept(this);
                 if (!(retType.isSubType(f.containingFunction.decl.type))) {
-                    throw new SemanticException("The type of an expression used in a return statement must be a subtype of the return type of the containing function");
+                    throw new SemanticException("Line [%d, %d]: The type of an expression used in a return statement must be a subtype of the return type of the containing function",
+                        retType.line,
+                        retType.pos
+                    );
                 }
             } else {
                 s.accept(this);
@@ -158,7 +187,10 @@ public class TypeCheckVisitor implements Visitor {
         Type exprType = (Type)w.expr.accept(this);
         // 3.1.2
         if (!(exprType instanceof BooleanType)) {
-            throw new SemanticException("An expression used as an while-statement condition must have type boolean");
+            throw new SemanticException("Line [%d, %d]: An expression used as an while-statement condition must have type boolean",
+                exprType.line,
+                exprType.pos
+            );
         }
         w.block.accept(this);
         return null;
@@ -169,7 +201,10 @@ public class TypeCheckVisitor implements Visitor {
         Type exprType = (Type)i.e.accept(this);
         // 3.1.1
         if (!(exprType instanceof BooleanType)) {
-            throw new SemanticException("An expression used as an if-statement condition must have type boolean");
+            throw new SemanticException("Line [%d, %d]: An expression used as an if-statement condition must have type boolean",
+                exprType.line,
+                exprType.pos
+            );
         }
         i.ifBlock.accept(this);
         if (i.elseBlock != null) {
@@ -183,7 +218,10 @@ public class TypeCheckVisitor implements Visitor {
         Type t = (Type)p.e.accept(this);
         // 3.1.3
         if (t instanceof VoidType) {
-            throw new SemanticException("An expression used in a print-statement must have type in {int, float, char, string, boolean}");
+            throw new SemanticException("Line [%d, %d]: An expression used in a print-statement must have type in {int, float, char, string, boolean}",
+                t.line,
+                t.pos
+            );
         }
         return null;
     }
@@ -193,7 +231,10 @@ public class TypeCheckVisitor implements Visitor {
         Type t = (Type)p.e.accept(this);
         // 3.1.4
         if (t instanceof VoidType) {
-            throw new SemanticException("An expression used in a println-statement must have type in {int, float, char, string, boolean}");
+            throw new SemanticException("Line [%d, %d]: An expression used in a println-statement must have type in {int, float, char, string, boolean}",
+                t.line,
+                t.pos
+            );
         }
         return null;
     }
@@ -203,7 +244,12 @@ public class TypeCheckVisitor implements Visitor {
         Type varType = (Type)a.id.accept(this);
         Type exprType = (Type)a.e.accept(this);
         if (!(exprType.isSubType(varType))) {
-            throw new SemanticException("The type of an expression used in an assignment statment must be a subtype of the variable type");
+            throw new SemanticException("Line [%d, %d]: The type %s of an expression used in an assignment statment must be a subtype of the variable type %s",
+                exprType.line,
+                exprType.pos,
+                exprType,
+                varType
+            );
         }
         return null;
     }
@@ -214,10 +260,18 @@ public class TypeCheckVisitor implements Visitor {
         Type indexType = (Type)a.e1.accept(this);
         Type exprType = (Type)a.e2.accept(this);
         if (!(indexType instanceof IntegerType)) {
-            throw new SemanticException("An array index expression must have type of int");
+            throw new SemanticException("Line [%d, %d]: An array index expression must have type of int",
+                indexType.line,
+                indexType.pos
+            );
         }
         if (!(exprType.isSubType(arrayType))) {
-            throw new SemanticException("The type " + exprType + " of an expression used in an array element assignment must be a subtype of the array type " + arrayType);
+            throw new SemanticException("Line [%d, %d]: The type %s of an expression used in an array element assignment must be a subtype of the array type %s",
+                exprType.line,
+                exprType.pos,
+                exprType,
+                arrayType
+            );
         }
         return null;
     }
@@ -247,13 +301,13 @@ public class TypeCheckVisitor implements Visitor {
         Type typeA = (Type)p.e1.accept(this);
         Type typeB = (Type)p.e2.accept(this);
         if (typeA instanceof BooleanType || typeA instanceof VoidType) {
-            throw new SemanticException("Binary operator '+' cannot be applied to operands of type " + typeA.toString());
+            throw new SemanticException("Line [%d, %d]: Binary operator '+' cannot be applied to operands of type %s", typeA.line, typeA.pos, typeA);
         }
         if (typeB instanceof BooleanType || typeB instanceof VoidType) {
-            throw new SemanticException("Binary operator '+' cannot be applied to operands of type " + typeB.toString());
+            throw new SemanticException("Line [%d, %d]: Binary operator '+' cannot be applied to operands of type %s", typeB.line, typeB.pos, typeB);
         }
         if (!typeA.equals(typeB)) {
-            throw new SemanticException("Binary operator '+' cannot be applied to operands of type " + typeA.toString() + "and " + typeB.toString());
+            throw new SemanticException("Line [%d, %d]: Binary operator '+' cannot be applied to operands of type %s and %s", typeA.line, typeA.pos, typeA, typeB);
         }
         return typeA;
     }
@@ -264,15 +318,15 @@ public class TypeCheckVisitor implements Visitor {
         if (typeA instanceof StringType || 
             typeA instanceof BooleanType || 
             typeA instanceof VoidType) {
-            throw new SemanticException("Binary operator '-' cannot be applied to operands of type " + typeA.toString());
+		throw new SemanticException("Line [%d, %d]: Binary operator '-' cannot be applied to operands of type %s", typeA.line, typeA.pos, typeA);            
         }
         if (typeB instanceof StringType ||
             typeB instanceof BooleanType || 
             typeB instanceof VoidType) {
-            throw new SemanticException("Binary operator '-' cannot be applied to operands of type " + typeB.toString());
+            throw new SemanticException("Line [%d, %d]: Binary operator '-' cannot be applied to operands of type %s", typeB.line, typeB.pos, typeB);
         }
         if (!typeA.equals(typeB)) {
-            throw new SemanticException("Binary operator '-' cannot be applied to operands of type " + typeA.toString() + "and " + typeB.toString());
+            throw new SemanticException("Line [%d, %d]: Binary operator '-' cannot be applied to operands of type %s and %s", typeA.line, typeA.pos, typeA, typeB);
         }
         return typeA;
     }
@@ -283,14 +337,14 @@ public class TypeCheckVisitor implements Visitor {
         Type typeB = (Type)m.e2.accept(this);
         if (!(typeA instanceof IntegerType) && 
             !(typeA instanceof FloatType)) {
-            throw new SemanticException("Binary operator '*' cannot be applied to operands of type " + typeA.toString());
+            throw new SemanticException("Line [%d, %d]: Binary operator '*' cannot be applied to operands of type %s", typeA.line, typeA.pos, typeA); 
         }
         if (!(typeB instanceof IntegerType) && 
             !(typeB instanceof FloatType)) {
-            throw new SemanticException("Binary operator '*' cannot be applied to operands of type " + typeB.toString());
+		throw new SemanticException("Line [%d, %d]: Binary operator '*' cannot be applied to operands of type %s", typeA.line, typeA.pos, typeA); 
         }
         if (!typeA.equals(typeB)) {
-            throw new SemanticException("Binary operator '*' cannot be applied to operands of type " + typeA.toString() + "and " + typeB.toString());
+            throw new SemanticException("Line [%d, %d]: Binary operator '*' cannot be applied to operands of type %s and %s", typeA.line, typeA.pos, typeA, typeB);
         }
         return typeA;
     }
@@ -300,10 +354,15 @@ public class TypeCheckVisitor implements Visitor {
         Type typeA = (Type)e.e1.accept(this);
         Type typeB = (Type)e.e2.accept(this);
         if (typeA instanceof VoidType || typeB instanceof VoidType) {
-            throw new SemanticException("Binary operator '==' cannot be applied to operands of type " + typeA.toString());
+            throw new SemanticException("Line [%d, %d]: Binary operator '==' cannot be applied to operands of type %s", typeA.line, typeA.pos, typeA); 
         }
         if (!typeA.equals(typeB)) {
-            throw new SemanticException("Binary operator '==' cannot be applied to operands of type " + typeA.toString() + "and " + typeB.toString());
+            throw new SemanticException("Line [%d, %d]:Binary operator '==' cannot be applied to operands of type %s and %s",
+                typeA.line,
+                typeA.pos,
+                typeA,
+                typeB
+            );
         }
         return new BooleanType();
     }
@@ -313,7 +372,9 @@ public class TypeCheckVisitor implements Visitor {
         Type typeA = (Type)l.e1.accept(this);
         Type typeB = (Type)l.e2.accept(this);
         if (!typeA.equals(typeB)) {
-            return null;
+            throw new SemanticException("Line [%d, %d]: Binary operator '<' cannot be applied to operands of type %s and %s", 
+                typeA.line, typeA.pos, typeA, typeB
+            ); 
         }
         return new BooleanType();
     }
@@ -322,7 +383,10 @@ public class TypeCheckVisitor implements Visitor {
     public Type visit(ArrayReference a) throws SemanticException {
         Type indexType = (Type)a.e.accept(this);
         if (!(indexType instanceof IntegerType)) {
-            throw new SemanticException("An array index expression must have type of int");
+            throw new SemanticException("Line [%d, %d]: An array index expression must have type of int",
+                indexType.line,
+                indexType.pos
+            );
         }
         return ((ArrayType)a.id.accept(this)).type;
     }
@@ -336,26 +400,43 @@ public class TypeCheckVisitor implements Visitor {
         if (decl == null) {
             return null;
         }
-        int defParamCount = decl.params.getFormalParameterCount();
-        int invocationParamCount = f.exprList.getExpressionCount();
-        if (defParamCount != invocationParamCount) {
-            throw new SemanticException("The number of arguments in the invocation must match the number of parameters n, in the function f");
-        }
-        for (int i = 0; i < defParamCount; i++) {
-            Type defType = decl.params.getFormalParameter(i).type;
-            Type invoType = (Type)f.exprList.getExpression(i).accept(this);
-            if (!(invoType.isSubType(defType))) {
-                throw new SemanticException("Type of arguments must be convetible to type of declared parameters");
+        if (decl.params != null) {
+            int defParamCount = decl.params.getFormalParameterCount();
+            int invocationParamCount = f.exprList.getExpressionCount();
+            if (defParamCount != invocationParamCount) {
+                // 3.2.3 a
+                throw new SemanticException("Line [%d, %d]: The number of arguments in the invocation must match the number of parameters %d in the function %s",
+                    f.id.id.line,
+                    f.id.id.pos,
+                    defParamCount,
+                    f.id.id.name
+                );
+            }
+            for (int i = 0; i < defParamCount; i++) {
+                Type defType = decl.params.getFormalParameter(i).type;
+                Type invoType = (Type)f.exprList.getExpression(i).accept(this);
+                if (!(invoType.isSubType(defType))) {
+                    // 3.2.3 b
+                    throw new SemanticException("Line [%d, %d]: Type of arguments must be convetible to type of declared parameters",
+                        invoType.line,
+                        invoType.pos
+                    );
+                }
             }
         }
+        
         return decl.type;
     }
 
     @Override
     public Type visit(IdentifierValue iv) throws SemanticException {
-        Type varType = variableEnv.lookup(iv.id.name);
+        Type varType = variableEnv.lookupInScope(iv.id.name);
         if (varType == null) {
-            throw new SemanticException("Each local variable must be defined before being used.");
+            throw new SemanticException("Line [%d, %d]: Local variable must be defined before being used: %s",
+                iv.id.line,
+                iv.id.pos,
+                iv.id.name
+            );
         }
         return varType;
     }

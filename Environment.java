@@ -22,7 +22,8 @@ public class Environment<K, V> {
 
     public V lookup(K key) {
         for (int i = symbolTables.size() - 1; i >= 0; i--) {
-            if (symbolTables.get(i).key.equals(key)) {
+            K symbolKey = symbolTables.get(i).key;
+            if (symbolKey != null && symbolKey.equals(key)) {
                 return symbolTables.get(i).value;
             }
         }
@@ -35,7 +36,7 @@ public class Environment<K, V> {
             if (entry.type == EnvEntryType.BEGIN_SCOPE) {
                 break;
             }
-            if (entry.key.equals(key)) {
+            if (entry.key != null && entry.key.equals(key)) {
                 return symbolTables.get(i).value;
             }
         }
