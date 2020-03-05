@@ -300,10 +300,10 @@ public class TypeCheckVisitor implements Visitor {
     public Type visit(PlusExpression p) throws SemanticException {
         Type typeA = (Type)p.e1.accept(this);
         Type typeB = (Type)p.e2.accept(this);
-        if (typeA instanceof BooleanType || typeA instanceof VoidType) {
+        if (typeA instanceof BooleanType || typeA instanceof VoidType || typeA instanceof ArrayType) {
             throw new SemanticException("Line [%d, %d]: Binary operator '+' cannot be applied to operands of type %s", typeA.line, typeA.pos, typeA);
         }
-        if (typeB instanceof BooleanType || typeB instanceof VoidType) {
+        if (typeB instanceof BooleanType || typeB instanceof VoidType || typeB instanceof ArrayType) {
             throw new SemanticException("Line [%d, %d]: Binary operator '+' cannot be applied to operands of type %s", typeB.line, typeB.pos, typeB);
         }
         if (!typeA.equals(typeB)) {
@@ -317,12 +317,14 @@ public class TypeCheckVisitor implements Visitor {
         Type typeB = (Type)p.e2.accept(this);
         if (typeA instanceof StringType || 
             typeA instanceof BooleanType || 
-            typeA instanceof VoidType) {
+            typeA instanceof VoidType ||
+            typeA instanceof ArrayType) {
 		throw new SemanticException("Line [%d, %d]: Binary operator '-' cannot be applied to operands of type %s", typeA.line, typeA.pos, typeA);            
         }
         if (typeB instanceof StringType ||
             typeB instanceof BooleanType || 
-            typeB instanceof VoidType) {
+            typeB instanceof VoidType || 
+            typeB instanceof ArrayType) {
             throw new SemanticException("Line [%d, %d]: Binary operator '-' cannot be applied to operands of type %s", typeB.line, typeB.pos, typeB);
         }
         if (!typeA.equals(typeB)) {
