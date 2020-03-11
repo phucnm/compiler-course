@@ -27,6 +27,6 @@ public class ArrayType extends Type {
         return visitor.visit(this);
     }
     public String toString() {
-        return type.toString() + "[" + Integer.toString(size.val) + "]";
+        return "A" + type.toString();
     }
 }

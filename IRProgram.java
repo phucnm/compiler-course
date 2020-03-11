@@ -29,6 +29,7 @@ public class IRProgram {
         StringBuilder sb = new StringBuilder();
         for (IRFunction func: functions) {
             sb.append(func.toString());
+            sb.append("\n");
         }
         return sb.toString();
     }

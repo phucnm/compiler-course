@@ -16,8 +16,10 @@ public class IRFunction extends Function implements IRInstruction {
         StringBuilder sb = new StringBuilder();
         sb.append("FUNC " + func.decl.id.name);
         sb.append(" (");
-        for (FormalParameter p: func.decl.params.params) {
-            sb.append(p.type.toString());
+        if (func.decl.params != null) {
+            for (FormalParameter p: func.decl.params.params) {
+                sb.append(p.type.toString());
+            }
         }
         sb.append(")");
         sb.append(func.decl.type.toString());
@@ -25,8 +27,13 @@ public class IRFunction extends Function implements IRInstruction {
         for (TempVar t: allocator.temps) {
             sb.append("\nTEMP " + t.number + ":" + t.type.toString() + ";");
         }
-        for (IRInstruction in: instList) {
-            sb.append("\n" + in.toString());
+        IRInstruction lastIR = null;
+        for (IRInstruction ir: instList) {
+            sb.append("\n" + ir.toString());
+            lastIR = ir;
+        }
+        if (func.decl.type instanceof VoidType && (lastIR == null || !(lastIR instanceof IRReturnInstruction))) {
+            sb.append("\n" + new IRReturnInstruction(null));
         }
         sb.append("\n}");
         return sb.toString();   

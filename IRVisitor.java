@@ -1,7 +1,6 @@
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.ArrayList;
+import java.util.Vector;
 
 public class IRVisitor implements Visitor {
 
@@ -89,6 +88,10 @@ public class IRVisitor implements Visitor {
     public TempVar visit(VariableDeclaration v) throws SemanticException {
         TempVar t = allocator.allocate(v.type, v.id.name, null);
         variableEnv.add(v.id.name, t);
+        if (t.type instanceof ArrayType) {
+            IRArrayCreation ir = new IRArrayCreation(t);
+            instList.add(ir);
+        }
         return null;
     }
 
@@ -104,8 +107,24 @@ public class IRVisitor implements Visitor {
 
     @Override
     public TempVar visit(WhileStatement w) throws SemanticException {
+        int whileBlockLbNumb = labelCount++;
+        IRLabel lb = new IRLabel(whileBlockLbNumb);
+        instList.add(lb);
+
         TempVar tmp = (TempVar)w.expr.accept(this);
+        IRNegation neg = new IRNegation(tmp);
+        instList.add(neg);
+        
+        IRIfInstruction ifIr = new IRIfInstruction(tmp, labelCount);
+        instList.add(ifIr);
         w.block.accept(this);
+
+        IRJump jump = new IRJump(whileBlockLbNumb);
+        instList.add(jump);
+
+        IRLabel endLb = new IRLabel(labelCount);
+        instList.add(endLb);
+
         return tmp;
     }
 
@@ -162,23 +181,11 @@ public class IRVisitor implements Visitor {
 
     @Override
     public TempVar visit(ArrayAssignment a) throws SemanticException {
-        Type arrayType = ((ArrayType)a.id.accept(this)).type;
-        Type indexType = (Type)a.e1.accept(this);
-        Type exprType = (Type)a.e2.accept(this);
-        if (!(indexType instanceof IntegerType)) {
-            throw new SemanticException("Line [%d, %d]: An array index expression must have type of int",
-                indexType.line,
-                indexType.pos
-            );
-        }
-        if (!(exprType.isSubType(arrayType))) {
-            throw new SemanticException("Line [%d, %d]: The type %s of an expression used in an array element assignment must be a subtype of the array type %s",
-                exprType.line,
-                exprType.pos,
-                exprType,
-                arrayType
-            );
-        }
+        TempVar lhs = (TempVar)a.id.accept(this);
+        TempVar index = (TempVar)a.e1.accept(this);
+        TempVar rhs = (TempVar)a.e2.accept(this);
+        IRArrayAssignment ir = new IRArrayAssignment(lhs, rhs, index);
+        instList.add(ir);
         return null;
     }
 
@@ -256,20 +263,20 @@ public class IRVisitor implements Visitor {
 
     @Override
     public TempVar visit(ArrayReference a) throws SemanticException {
-        Type indexType = (Type)a.e.accept(this);
-        if (!(indexType instanceof IntegerType)) {
-            throw new SemanticException("Line [%d, %d]: An array index expression must have type of int",
-                indexType.line,
-                indexType.pos
-            );
-        }
-        return null;
+        TempVar var = (TempVar)a.id.accept(this);
+        TempVar index = (TempVar)a.e.accept(this);
+        ArrayType aType = (ArrayType)var.type;
+        TempVar t = allocator.allocate(aType.type, "LOCAL", null);
+        IRArrayReference ir = new IRArrayReference(t, var, index);
+        instList.add(ir);
+        return t;
     }
 
     @Override
     public TempVar visit(FunctionCall f) throws SemanticException {
+        TempVar[] params = null;
         if (f.exprList != null) {
-            f.exprList.accept(this);
+            params = (TempVar[])f.exprList.accept(this);
         }
         FunctionDeclaration decl = functionEnv.lookup(f.id.id.name);
         if (decl == null) {
@@ -277,30 +284,16 @@ public class IRVisitor implements Visitor {
         }
         if (decl.params != null) {
             int defParamCount = decl.params.getFormalParameterCount();
-            int invocationParamCount = f.exprList.getExpressionCount();
-            if (defParamCount != invocationParamCount) {
-                // 3.2.3 a
-                throw new SemanticException("Line [%d, %d]: The number of arguments in the invocation must match the number of parameters %d in the function %s",
-                    f.id.id.line,
-                    f.id.id.pos,
-                    defParamCount,
-                    f.id.id.name
-                );
-            }
-            for (int i = 0; i < defParamCount; i++) {
-                Type defType = decl.params.getFormalParameter(i).type;
-                Type invoType = (Type)f.exprList.getExpression(i).accept(this);
-                if (!(invoType.isSubType(defType))) {
-                    // 3.2.3 b
-                    throw new SemanticException("Line [%d, %d]: Type of arguments must be convetible to type of declared parameters",
-                        invoType.line,
-                        invoType.pos
-                    );
-                }
-            }
+            int invocationParamCount = f.exprList.getExpressionCount();    
+        }
+        TempVar t = null;
+        if (!(decl.type instanceof VoidType)) {
+            t = allocator.allocate(decl.type, "LOCAL", null);
         }
         
-        return null;
+        IRFunctionCall ir = new IRFunctionCall(t, decl, params);
+        instList.add(ir);
+        return t;
     }
 
     @Override
@@ -355,14 +348,20 @@ public class IRVisitor implements Visitor {
     }
 
     @Override
-    public TempVar visit(ExpressionList l) throws SemanticException {
+    public TempVar[] visit(ExpressionList l) throws SemanticException {
         int listSize = l.getExpressionCount();
+        if (listSize == 0) {
+            return null;
+        }
+        TempVar[] temps = new TempVar[listSize];
         for (int i=0; i < listSize; i++)
         {
             Expression e = l.getExpression(i);
-            e.accept(this);
+            TempVar t = (TempVar)e.accept(this);
+            temps[i] = t;
         }
-        return null;
+        System.out.println(temps);
+        return temps;
     }
 
     @Override
