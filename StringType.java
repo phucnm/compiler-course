@@ -3,6 +3,6 @@ public class StringType extends Type {
         return visitor.visit(this);
     }
     public String toString() {
-        return "string";
+        return "U";
     }
 }

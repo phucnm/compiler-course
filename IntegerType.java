@@ -3,6 +3,6 @@ public class IntegerType extends Type {
         return visitor.visit(this);
     }
     public String toString() {
-        return "int";
+        return "I";
     }
 }

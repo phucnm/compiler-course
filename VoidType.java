@@ -3,6 +3,6 @@ public class VoidType extends Type {
         return visitor.visit(this);
     }
     public String toString() {
-        return "void";
+        return "V";
     }
 }

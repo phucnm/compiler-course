@@ -25,8 +25,9 @@ public class Compiler {
 				CommonTokenStream tokens = new CommonTokenStream(lexer);
 				ulNoActionsParser parser = new ulNoActionsParser(tokens);
 				Program p = parser.program();
-				TypeCheckVisitor v = new TypeCheckVisitor();
-				p.accept(v);
+				IRVisitor v = new IRVisitor();
+                p.accept(v);
+                System.out.println(v.program.toString());
             }
             catch (RecognitionException e )	{
                 // A lexical or parsing error occured.

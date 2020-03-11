@@ -3,6 +3,6 @@ public class FloatType extends Type {
         return visitor.visit(this);
     }
     public String toString() {
-        return "float";
+        return "F";
     }
 }

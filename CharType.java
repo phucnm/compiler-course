@@ -3,6 +3,6 @@ public class CharType extends Type {
         return visitor.visit(this);
     }
     public String toString() {
-        return "char";
+        return "C";
     }
 }

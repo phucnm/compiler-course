@@ -3,6 +3,6 @@ public class BooleanType extends Type {
         return visitor.visit(this);
     }
     public String toString() {
-        return "boolean";
+        return "Z";
     }
 }
