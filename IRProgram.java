@@ -3,10 +3,11 @@ import java.util.Vector;
 public class IRProgram {
     Vector<IRFunction> functions;
     Program p;
-
-    public IRProgram(Program p)
+    String name; 
+    public IRProgram(Program p, String name)
     {
         functions = new Vector<IRFunction>();
+        this.name = name;
         this.p = p;
     }
 
@@ -27,6 +28,7 @@ public class IRProgram {
 
     public String toString() {
         StringBuilder sb = new StringBuilder();
+        sb.append("PROG " + name + "\n");
         for (IRFunction func: functions) {
             sb.append(func.toString());
             sb.append("\n");

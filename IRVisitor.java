@@ -10,10 +10,11 @@ public class IRVisitor implements Visitor {
     List<IRInstruction> instList;
     IRProgram program;
     Integer labelCount = 0;
+    String programName = "";
     
     @Override
     public TempVar visit(Program p) throws SemanticException {
-        program = new IRProgram(p);
+        program = new IRProgram(p, programName);
         int funcCount = p.functions.size();
 
         for (int i = 0; i < funcCount; i++) {
@@ -112,10 +113,14 @@ public class IRVisitor implements Visitor {
         instList.add(lb);
 
         TempVar tmp = (TempVar)w.expr.accept(this);
-        IRNegation neg = new IRNegation(tmp);
+        TempVar condTemp = new TempVar(tmp.type, tmp.name, tmp.number);
+        if (variableEnv.lookupInScope(tmp.name) != null) {
+            condTemp = allocator.allocate(new BooleanType(), "LOCAL", null);
+        }
+        IRNegation neg = new IRNegation(condTemp, tmp);
         instList.add(neg);
         
-        IRIfInstruction ifIr = new IRIfInstruction(tmp, labelCount);
+        IRIfInstruction ifIr = new IRIfInstruction(condTemp, labelCount);
         instList.add(ifIr);
         w.block.accept(this);
 
@@ -131,10 +136,15 @@ public class IRVisitor implements Visitor {
     @Override
     public TempVar visit(IfStatement i) throws SemanticException {
         TempVar tmp = (TempVar)i.e.accept(this);
-        IRNegation neg = new IRNegation(tmp);
+        TempVar condTemp = new TempVar(tmp.type, tmp.name, tmp.number);
+        if (variableEnv.lookupInScope(tmp.name) != null) {
+            condTemp = allocator.allocate(new BooleanType(), "LOCAL", null);
+        }
+        IRNegation neg = new IRNegation(condTemp, tmp);
         instList.add(neg);
+        
         int elseBlockLbNumber = labelCount;
-        IRIfInstruction ifIr = new IRIfInstruction(tmp, elseBlockLbNumber);
+        IRIfInstruction ifIr = new IRIfInstruction(condTemp, elseBlockLbNumber);
         instList.add(ifIr);
 
         i.ifBlock.accept(this);
@@ -245,7 +255,7 @@ public class IRVisitor implements Visitor {
     public TempVar visit(EqualityExpression e) throws SemanticException {
         TempVar lhs = (TempVar)e.e1.accept(this);
         TempVar rhs = (TempVar)e.e2.accept(this);
-        TempVar t = allocator.allocate(lhs.type, "LOCAL", null);
+        TempVar t = allocator.allocate(new BooleanType(), "LOCAL", null);
         IRBinaryOperation ir = new IRBinaryOperation(t, lhs, rhs, "==");
         instList.add(ir);
         return t;
@@ -255,7 +265,7 @@ public class IRVisitor implements Visitor {
     public TempVar visit(LessThanExpression l) throws SemanticException {
         TempVar lhs = (TempVar)l.e1.accept(this);
         TempVar rhs = (TempVar)l.e2.accept(this);
-        TempVar t = allocator.allocate(lhs.type, "LOCAL", null);
+        TempVar t = allocator.allocate(new BooleanType(), "LOCAL", null);
         IRBinaryOperation ir = new IRBinaryOperation(t, lhs, rhs, "<");
         instList.add(ir);
         return t;
@@ -360,7 +370,6 @@ public class IRVisitor implements Visitor {
             TempVar t = (TempVar)e.accept(this);
             temps[i] = t;
         }
-        System.out.println(temps);
         return temps;
     }
 

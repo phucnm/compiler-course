@@ -12,6 +12,6 @@ public class IRBinaryOperation implements IRInstruction {
     }
 
     public String toString() {
-        return String.format("%s := %s %s%s %s;", var.toString(), lhs.toString(), var.type.toString(), op, rhs.toString());
+        return String.format("%s := %s %s%s %s;", var.toString(), lhs.toString(), lhs.type.toString(), op, rhs.toString());
     }
 }

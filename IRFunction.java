@@ -25,15 +25,20 @@ public class IRFunction extends Function implements IRInstruction {
         sb.append(func.decl.type.toString());
         sb.append("\n{");
         for (TempVar t: allocator.temps) {
-            sb.append("\nTEMP " + t.number + ":" + t.type.toString() + ";");
+            sb.append("\n    TEMP " + t.number + ":" + t.type.toString() + ";");
         }
         IRInstruction lastIR = null;
         for (IRInstruction ir: instList) {
-            sb.append("\n" + ir.toString());
+            if (ir instanceof IRLabel) {
+                sb.append("\n" + ir.toString());
+            } else {
+                sb.append("\n        " + ir.toString());
+            }
+            
             lastIR = ir;
         }
         if (func.decl.type instanceof VoidType && (lastIR == null || !(lastIR instanceof IRReturnInstruction))) {
-            sb.append("\n" + new IRReturnInstruction(null));
+            sb.append("\n        " + new IRReturnInstruction(null));
         }
         sb.append("\n}");
         return sb.toString();   

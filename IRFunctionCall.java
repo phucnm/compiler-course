@@ -17,7 +17,7 @@ public class IRFunctionCall implements IRInstruction {
                 params[i] = temps[i].toString();
             }
 
-            paramStr = String.format("(%s)", String.join(",", params));
+            paramStr = String.format("(%s)", String.join("", params));
         }
         String assignmentStr = t != null ? String.format("%s := ", t.toString()) : "";
         return String.format("%sCALL %s%s;", assignmentStr, func.id.name, paramStr);

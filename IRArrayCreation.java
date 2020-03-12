@@ -7,6 +7,6 @@ public class IRArrayCreation implements IRInstruction {
 
     public String toString() {
         ArrayType aType = (ArrayType)t.type;
-        return String.format("%s := NEWARRAY %s %s;", t.toString(), t.type.toString(), aType.size.val.toString());
+        return String.format("%s := NEWARRAY %s %s;", t.toString(), aType.type.toString(), aType.size.val.toString());
     }
 }
