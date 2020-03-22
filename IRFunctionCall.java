@@ -27,16 +27,6 @@ public class IRFunctionCall implements IRInstruction {
 
     @Override
     public String toBytecodeString() {
-        String paramStr = "";
-        if (temps != null) {
-            String[] params = new String[temps.length];
-            for (int i = 0; i < temps.length; i++) {
-                params[i] = temps[i].toString();
-            }
-
-            paramStr = String.format("(%s)", String.join("", params));
-        }
-        String assignmentStr = t != null ? String.format("%s := ", t.toString()) : "";
         StringBuilder sb = new StringBuilder();
         boolean first = true;
         for (TempVar t: temps) {

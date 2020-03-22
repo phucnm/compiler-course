@@ -293,10 +293,6 @@ public class IRVisitor implements Visitor {
         if (func.decl == null) {
             return null;
         }
-        if (decl.params != null) {
-            int defParamCount = decl.params.getFormalParameterCount();
-            int invocationParamCount = f.exprList.getExpressionCount();    
-        }
         TempVar t = null;
         if (!(decl.type instanceof VoidType)) {
             t = allocator.allocate(decl.type, "LOCAL", null);
