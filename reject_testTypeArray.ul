@@ -1,5 +1,0 @@
-// Reject test suite
-
-int foo() {
-   int[0.8] a; 
-}

@@ -5,4 +5,12 @@ public class BooleanType extends Type {
     public String toString() {
         return "Z";
     }
+
+    public String toSignString() {
+        return "Z";
+    }
+
+    public String toStringInArrayCreation() {
+        return "boolean";
+    }
 }

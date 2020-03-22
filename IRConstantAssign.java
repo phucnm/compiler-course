@@ -10,4 +10,13 @@ public class IRConstantAssign implements IRInstruction {
     public String toString() {
         return t.toString() + " := " + val.toString() + ";";
     }
+
+    @Override
+    public String toBytecodeString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format("ldc %s", val.toString()));
+        String type = (t.type instanceof StringType) ? "a" : t.type.toString().toLowerCase();
+        sb.append(String.format("\n    %sstore %d", type, t.number));
+        return sb.toString();
+    }
 }

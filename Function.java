@@ -26,6 +26,27 @@ public class Function implements ASTNode {
         return sb.toString();
     }
 
+    /// Format name(parms)returnType
+    /// e.g. foo(II)V
+    /// bar(Ljava/lang/String;Ljava/lang/String;)I
+    public String functionSignature() {
+        StringBuilder sb = new StringBuilder();
+        if (decl.id.name.equals("main")) {
+            sb.append("__main");
+        } else {
+            sb.append(decl.id.name);
+        }
+        sb.append("(");
+        if (decl.params != null) {
+            for (FormalParameter p: decl.params.params) {
+                sb.append(p.type.toSignString());
+            }
+        }
+        sb.append(")");
+        sb.append(decl.type.toSignString());
+        return sb.toString();
+    }
+
     @Override
     public Object accept(Visitor visitor) {
         return visitor.visit(this);

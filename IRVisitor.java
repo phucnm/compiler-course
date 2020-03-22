@@ -1,16 +1,16 @@
 import java.util.List;
 import java.util.ArrayList;
-import java.util.Vector;
 
 public class IRVisitor implements Visitor {
 
     private Environment<String, TempVar> variableEnv = new Environment<>();
-    private Environment<String, FunctionDeclaration> functionEnv = new Environment<>();
+    private Environment<String, Function> functionEnv = new Environment<>();
     TempAllocator allocator;
     List<IRInstruction> instList;
     IRProgram program;
     Integer labelCount = 0;
     String programName = "";
+    Integer cmp_labelCount = 0;
     
     @Override
     public TempVar visit(Program p) throws SemanticException {
@@ -19,7 +19,7 @@ public class IRVisitor implements Visitor {
 
         for (int i = 0; i < funcCount; i++) {
             Function f = p.getFunction(i);
-            functionEnv.add(f.decl.id.name, f.decl);
+            functionEnv.add(f.decl.id.name, f);
         }
 
         for (int i = 0; i < funcCount; i++)
@@ -226,7 +226,7 @@ public class IRVisitor implements Visitor {
         TempVar lhs = (TempVar)p.e1.accept(this);
         TempVar rhs = (TempVar)p.e2.accept(this);
         TempVar t = allocator.allocate(lhs.type, "LOCAL", null);
-        IRBinaryOperation ir = new IRBinaryOperation(t, lhs, rhs, "+");
+        IRBinaryOperation ir = new IRBinaryOperation(t, lhs, rhs, "add");
         instList.add(ir);
         return t;
     }
@@ -236,7 +236,7 @@ public class IRVisitor implements Visitor {
         TempVar lhs = (TempVar)p.e1.accept(this);
         TempVar rhs = (TempVar)p.e2.accept(this);
         TempVar t = allocator.allocate(lhs.type, "LOCAL", null);
-        IRBinaryOperation ir = new IRBinaryOperation(t, lhs, rhs, "-");
+        IRBinaryOperation ir = new IRBinaryOperation(t, lhs, rhs, "sub");
         instList.add(ir);
         return t;
     }
@@ -246,7 +246,7 @@ public class IRVisitor implements Visitor {
         TempVar lhs = (TempVar)m.e1.accept(this);
         TempVar rhs = (TempVar)m.e2.accept(this);
         TempVar t = allocator.allocate(lhs.type, "LOCAL", null);
-        IRBinaryOperation ir = new IRBinaryOperation(t, lhs, rhs, "*");
+        IRBinaryOperation ir = new IRBinaryOperation(t, lhs, rhs, "mul");
         instList.add(ir);
         return t;
     }
@@ -256,7 +256,7 @@ public class IRVisitor implements Visitor {
         TempVar lhs = (TempVar)e.e1.accept(this);
         TempVar rhs = (TempVar)e.e2.accept(this);
         TempVar t = allocator.allocate(new BooleanType(), "LOCAL", null);
-        IRBinaryOperation ir = new IRBinaryOperation(t, lhs, rhs, "==");
+        IREqualityOperation ir = new IREqualityOperation(t, lhs, rhs, cmp_labelCount++);
         instList.add(ir);
         return t;
     }
@@ -266,7 +266,7 @@ public class IRVisitor implements Visitor {
         TempVar lhs = (TempVar)l.e1.accept(this);
         TempVar rhs = (TempVar)l.e2.accept(this);
         TempVar t = allocator.allocate(new BooleanType(), "LOCAL", null);
-        IRBinaryOperation ir = new IRBinaryOperation(t, lhs, rhs, "<");
+        IRLessthanOperation ir = new IRLessthanOperation(t, lhs, rhs, cmp_labelCount++);
         instList.add(ir);
         return t;
     }
@@ -288,8 +288,9 @@ public class IRVisitor implements Visitor {
         if (f.exprList != null) {
             params = (TempVar[])f.exprList.accept(this);
         }
-        FunctionDeclaration decl = functionEnv.lookup(f.id.id.name);
-        if (decl == null) {
+        Function func = functionEnv.lookup(f.id.id.name);
+        FunctionDeclaration decl = func.decl;
+        if (func.decl == null) {
             return null;
         }
         if (decl.params != null) {
@@ -301,7 +302,7 @@ public class IRVisitor implements Visitor {
             t = allocator.allocate(decl.type, "LOCAL", null);
         }
         
-        IRFunctionCall ir = new IRFunctionCall(t, decl, params);
+        IRFunctionCall ir = new IRFunctionCall(t, func, params, programName);
         instList.add(ir);
         return t;
     }

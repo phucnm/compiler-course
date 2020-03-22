@@ -5,4 +5,12 @@ public class StringType extends Type {
     public String toString() {
         return "U";
     }
+
+    public String toSignString() {
+        return "Ljava/lang/String;";
+    }
+
+    public String toStringInArrayCreation() {
+        return "java/lang/String";
+    }
 }

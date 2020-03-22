@@ -1,6 +1,0 @@
-// Reject test suite
-
-int foo() {
-   float f;
-   f = 3,4; 
-}

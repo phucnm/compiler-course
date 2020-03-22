@@ -5,4 +5,12 @@ public class VoidType extends Type {
     public String toString() {
         return "V";
     }
+
+    public String toSignString() {
+        return "V";
+    }
+
+    public String toStringInArrayCreation() {
+        return "V";
+    }
 }

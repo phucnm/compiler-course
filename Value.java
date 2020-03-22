@@ -6,7 +6,7 @@ public class Value {
 
     public String toString() {
         if (object instanceof Character) {
-            return String.format("\'%s\'", object.toString());
+            return String.format("%d", (int)((Character)object).charValue());
         } else if (object instanceof String) {
             return String.format("\"%s\"", object.toString());
         }

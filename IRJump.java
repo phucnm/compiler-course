@@ -8,4 +8,9 @@ public class IRJump implements IRInstruction {
     public String toString() {
         return String.format("GOTO L%s;", labelNumber.toString());
     }
+
+    @Override
+    public String toBytecodeString() {
+        return String.format("goto L%s", labelNumber.toString());
+    }
 }

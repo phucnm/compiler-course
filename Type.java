@@ -1,6 +1,8 @@
 public abstract class Type {
     public abstract Object accept(Visitor v);
     public abstract String toString();
+    public abstract String toSignString();
+    public abstract String toStringInArrayCreation();
     public int pos;
     public int line;
     

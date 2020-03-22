@@ -1,6 +1,0 @@
-// Reject test suite
-
-void foo() {
-    a = 1;
-    int a;
-}

@@ -29,4 +29,12 @@ public class ArrayType extends Type {
     public String toString() {
         return "A" + type.toString();
     }
+
+    public String toSignString() {
+        return String.format("[%s", type.toSignString());
+    }
+
+    public String toStringInArrayCreation() {
+        return "n/a";
+    }
 }

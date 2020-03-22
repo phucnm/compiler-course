@@ -1,5 +1,0 @@
-// Reject test suite
-
-int foo() {
-   while (a < 2) ()
-}

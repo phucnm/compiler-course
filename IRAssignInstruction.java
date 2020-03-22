@@ -9,4 +9,12 @@ public class IRAssignInstruction implements IRInstruction {
     public String toString() {
         return lhs.toString() + " := " + rhs.toString() + ";";
     }
+
+    @Override
+    public String toBytecodeString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(String.format("%sload %d", rhs.type.toString().toLowerCase(), rhs.number));
+        sb.append(String.format("\n    %sstore %d", lhs.type.toString().toLowerCase(), lhs.number));
+        return sb.toString();
+    }
 }
