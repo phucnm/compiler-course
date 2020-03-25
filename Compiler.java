@@ -30,7 +30,7 @@ public class Compiler {
             IRVisitor v = new IRVisitor();
             v.programName = getBaseName(Paths.get(args[0]).getFileName().toString());
             p.accept(v);
-            System.out.println(v.program.toBytecodeString());
+            System.out.println(v.program.toString());
         }
         catch (RecognitionException e )	{
             // A lexical or parsing error occured.

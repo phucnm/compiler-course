@@ -2,6 +2,7 @@ import java.util.Vector;
 
 public class Block implements ASTNode {
     Vector<Statement> stmts;
+    int jumpLbNumb = -1;
 
     public Block()
     {

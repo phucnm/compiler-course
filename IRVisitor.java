@@ -103,6 +103,9 @@ public class IRVisitor implements Visitor {
             Statement s = b.getStatement(i);
             s.accept(this);
         }
+        if (b.jumpLbNumb != -1) {
+            instList.add(new IRJump(b.jumpLbNumb));
+        }
         return null;
     }
 
@@ -142,25 +145,24 @@ public class IRVisitor implements Visitor {
         }
         IRNegation neg = new IRNegation(condTemp, tmp);
         instList.add(neg);
-        
-        int elseBlockLbNumber = labelCount;
-        IRIfInstruction ifIr = new IRIfInstruction(condTemp, elseBlockLbNumber);
-        instList.add(ifIr);
 
-        i.ifBlock.accept(this);
-        int ifBlockLbNumber = i.elseBlock != null ? labelCount + 1 : labelCount;
-        IRJump ifJump = new IRJump(ifBlockLbNumber);
-        instList.add(ifJump);
-        
         if (i.elseBlock != null) {
-            labelCount++;
-            IRLabel elseLbIr = new IRLabel(elseBlockLbNumber);
-            instList.add(elseLbIr);
+            int elseBlkLbNumber = labelCount++;
+            int outScopeLbNumber = labelCount++;
+            IRIfInstruction ifIr = new IRIfInstruction(condTemp, elseBlkLbNumber);
+            instList.add(ifIr);
+            i.ifBlock.accept(this);
+            instList.add(new IRJump(outScopeLbNumber));
+            instList.add(new IRLabel(elseBlkLbNumber));
             i.elseBlock.accept(this);
+            instList.add(new IRLabel(outScopeLbNumber));
+        } else {
+            int lbNumb = labelCount++;
+            IRIfInstruction ifIr = new IRIfInstruction(condTemp, lbNumb);
+            instList.add(ifIr);
+            i.ifBlock.accept(this);
+            instList.add(new IRLabel(lbNumb));
         }
-        IRLabel lb = new IRLabel(labelCount);
-        instList.add(lb);
-
         return tmp;
     }
 
