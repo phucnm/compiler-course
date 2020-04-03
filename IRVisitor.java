@@ -111,6 +111,7 @@ public class IRVisitor implements Visitor {
 
     @Override
     public TempVar visit(WhileStatement w) throws SemanticException {
+        // instList.add(new IRDirective("while start"));
         int whileBlockLbNumb = labelCount++;
         IRLabel lb = new IRLabel(whileBlockLbNumb);
         instList.add(lb);
@@ -123,21 +124,25 @@ public class IRVisitor implements Visitor {
         IRNegation neg = new IRNegation(condTemp, tmp);
         instList.add(neg);
         
-        IRIfInstruction ifIr = new IRIfInstruction(condTemp, labelCount);
+        Integer endScopeLb = labelCount++;
+
+        IRIfInstruction ifIr = new IRIfInstruction(condTemp, endScopeLb);
         instList.add(ifIr);
         w.block.accept(this);
 
         IRJump jump = new IRJump(whileBlockLbNumb);
         instList.add(jump);
 
-        IRLabel endLb = new IRLabel(labelCount);
+        IRLabel endLb = new IRLabel(endScopeLb);
         instList.add(endLb);
 
+        // instList.add(new IRDirective("while end0"));
         return tmp;
     }
 
     @Override
     public TempVar visit(IfStatement i) throws SemanticException {
+        // instList.add(new IRDirective("if start"));
         TempVar tmp = (TempVar)i.e.accept(this);
         TempVar condTemp = new TempVar(tmp.type, tmp.name, tmp.number);
         if (variableEnv.lookupInScope(tmp.name) != null) {
@@ -147,6 +152,7 @@ public class IRVisitor implements Visitor {
         instList.add(neg);
 
         if (i.elseBlock != null) {
+            // instList.add(new IRDirective("else start"));
             int elseBlkLbNumber = labelCount++;
             int outScopeLbNumber = labelCount++;
             IRIfInstruction ifIr = new IRIfInstruction(condTemp, elseBlkLbNumber);
@@ -156,6 +162,7 @@ public class IRVisitor implements Visitor {
             instList.add(new IRLabel(elseBlkLbNumber));
             i.elseBlock.accept(this);
             instList.add(new IRLabel(outScopeLbNumber));
+            // instList.add(new IRDirective("else end"));
         } else {
             int lbNumb = labelCount++;
             IRIfInstruction ifIr = new IRIfInstruction(condTemp, lbNumb);
@@ -163,6 +170,7 @@ public class IRVisitor implements Visitor {
             i.ifBlock.accept(this);
             instList.add(new IRLabel(lbNumb));
         }
+        // instList.add(new IRDirective("if end"));
         return tmp;
     }
 

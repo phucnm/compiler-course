@@ -29,13 +29,15 @@ public class IRFunctionCall implements IRInstruction {
     public String toBytecodeString() {
         StringBuilder sb = new StringBuilder();
         boolean first = true;
-        for (TempVar t: temps) {
+        if (temps != null) {
+            for (TempVar t: temps) {
             if (first == true) {
                 sb.append(String.format("%sload %d", t.type.toSignString().toLowerCase(), t.number));    
                 first = false;
             } else {
                 sb.append(String.format("\n    %sload %d", t.type.toString().toLowerCase(), t.number));
             }
+        }
         }
         sb.append(String.format("\n    invokestatic %s/%s", progName, func.functionSignature().replace(" ", "")));
         if (t != null) {
